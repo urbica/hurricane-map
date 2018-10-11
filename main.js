@@ -8,7 +8,7 @@ const map = new mapboxgl.Map({
 });
 
 map.on('load', () => {
-  fetch('http://api.wunderground.com/api/63bd21da7558e560/currenthurricane/view.json')
+  fetch('https://api.wunderground.com/api/63bd21da7558e560/currenthurricane/view.json')
     .then(response => response.json())
     .then(data => {
       return parsingSources(data)
