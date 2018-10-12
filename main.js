@@ -148,7 +148,15 @@ map.on('load', () => {
         }
       });
 
-
+      map.addLayer({
+        'id': 'forecastPointHurricanesHover',
+        'type': 'circle',
+        'source': 'forecastPointHurricanes',
+        'paint': {
+          'circle-radius': 10,
+          'circle-opacity': 0
+        }
+      });
 
       map.addLayer({
         'id': 'historyPointHurricanes',
@@ -288,7 +296,7 @@ map.on('load', () => {
         closeOnClick: false
       });
 
-      const onMouseEnter = (e) => {
+      const onMouseEnter = (sourceName, e) => {
         // Change the cursor style as a UI indicator.
         map.getCanvas().style.cursor = 'pointer';
 
@@ -310,16 +318,16 @@ map.on('load', () => {
 
         if (e.features.length > 0) {
           if (hoveredStateId) {
-            map.setFeatureState({source: 'forecastPointHurricanes', id: hoveredStateId}, { hover: false});
+            map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: false});
           }
           hoveredStateId = e.features[0].id;
-          map.setFeatureState({source: 'forecastPointHurricanes', id: hoveredStateId}, { hover: true});
+          map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: true});
         }
 
         const year = properties['TimeGMT.year'];
         const mon = properties['TimeGMT.mon'];
         const mday = properties['TimeGMT.mday'];
-        const hour = properties['TimeGMT.hour'];
+        const hour = properties['TimeGMT.hour'] || 0;
         const offset = new Date().getTimezoneOffset() / 60;
         const date = new Date(+year, +mon, +mday, (+hour - offset));
 
@@ -338,30 +346,30 @@ map.on('load', () => {
           .addTo(map);
       };
 
-      const onMouseLeave = () => {
+      const onMouseLeave = (sourceName) => {
         map.getCanvas().style.cursor = '';
         popup.remove();
 
         if (hoveredStateId) {
-          map.setFeatureState({source: 'forecastPointHurricanes', id: hoveredStateId}, { hover: false});
+          map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: false});
         }
         hoveredStateId =  null;
       };
 
-      map.on('mouseenter', 'forecastPointHurricanes', (e) => {
-        onMouseEnter(e);
+      map.on('mouseenter', 'forecastPointHurricanesHover', (e) => {
+        onMouseEnter('forecastPointHurricanes', e);
       });
 
       map.on('mouseenter', 'historyPointHurricanes', (e) => {
-        onMouseEnter(e);
+        onMouseEnter('historyPointHurricanes', e);
       });
 
-      map.on('mouseleave', 'forecastPointHurricanes', () => {
-        onMouseLeave()
+      map.on('mouseleave', 'forecastPointHurricanesHover', () => {
+        onMouseLeave('forecastPointHurricanes')
       });
 
       map.on('mouseleave', 'historyPointHurricanes', () => {
-        onMouseLeave()
+        onMouseLeave('historyPointHurricanes')
       });
     })
 });
