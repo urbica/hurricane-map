@@ -18,7 +18,7 @@ map.on('load', () => {
     .then(data => {
       const {year, mon, mday, hour} = data.currenthurricane[0].Current.TimeGMT;
       const offset = new Date().getTimezoneOffset() / 60;
-      const currentDate = new Date(+year, +mon, +mday, (+hour - offset));
+      const currentDate = new Date(+year, +mon - 1, +mday, (+hour - offset));
 
       info.textContent = `Updated: ${currentDate.toLocaleString()}`;
       return parsingSources(data)
