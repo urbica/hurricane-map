@@ -4,13 +4,14 @@ mapboxgl.accessToken = 'pk.eyJ1IjoidGF5YWNoaWxsIiwiYSI6ImNpbGtxeHdnNzAwNzRvMGtxc
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/tayachill/cjn4rvudk085g2smerfhmsbp3',
-  center: [-23.458504, 33.315297],
+  center: [-23.458504,33.315297],
   zoom: 2
 });
 
 const info = document.getElementById('info');
 
-let hoveredStateId = null;
+let hoveredStateId =  null;
+
 
 map.on('load', () => {
   fetch('https://api.wunderground.com/api/63bd21da7558e560/currenthurricane/view.json')
@@ -18,7 +19,7 @@ map.on('load', () => {
     .then(data => {
       const {year, mon, mday, hour} = data.currenthurricane[0].Current.TimeGMT;
       const offset = new Date().getTimezoneOffset() / 60;
-      const currentDate = new Date(+year, +mon - 1, +mday, (+hour - offset));
+      const currentDate = new Date(+year, +mon, +mday, (+hour - offset));
 
       info.textContent = `Updated: ${currentDate.toLocaleString()}`;
       return parsingSources(data)
@@ -93,7 +94,6 @@ map.on('load', () => {
           'line-color': '#fe8191'
         }
       });
-
       map.addLayer({
         'id': 'forecastPointHurricanes_bg',
         'type': 'circle',
@@ -135,25 +135,23 @@ map.on('load', () => {
             10
           ],
           'circle-color': ['case',
-            ['boolean', ['feature-state', 'hover'], false],
-            "#980027",
-            '#4042ff'
-          ],
+               ['boolean', ['feature-state', 'hover'], false],
+                 "#980027",
+                 '#4042ff'],
           'circle-stroke-color': '#FFF',
           'circle-stroke-width': 1,
           'circle-stroke-opacity': 1,
         }
       });
-
-      map.addLayer({
-        'id': 'forecastPointHurricanesHover',
-        'type': 'circle',
-        'source': 'forecastPointHurricanes',
-        'paint': {
-          'circle-radius': 10,
-          'circle-opacity': 0
-        }
-      });
+      // map.addLayer({
+      //   'id': 'forecastPointHurricanesHover',
+      //   'type': 'circle',
+      //   'source': 'forecastPointHurricanes',
+      //   'paint': {
+      //     'circle-radius': 10,
+      //     'circle-opacity': 0
+      //   }
+      // });
 
       map.addLayer({
         'id': 'historyPointHurricanes_bg',
@@ -332,22 +330,33 @@ map.on('load', () => {
             ]
           ],
           'circle-color': ['case',
-            ['boolean', ['feature-state', 'hover'], false],
-            "#980027"
-            ,
-            [
-              "interpolate",
-              ["linear"],
-              ["get", "WindSpeed.Kph"],
-              55,
-              "hsl(47, 100%, 90%)",
-              120,
-              "hsl(340, 100%, 82%)",
-              220,
-              "#ff0040"
-            ]
-          ],
-          'circle-stroke-opacity': 0
+               ['boolean', ['feature-state', 'hover'], false],
+                 "#980027"
+                ,
+               [
+                 "interpolate",
+                 ["linear"],
+                 ["get", "WindSpeed.Kph"],
+                 55,
+                 "hsl(47, 100%, 90%)",
+                 120,
+                 "hsl(340, 100%, 82%)",
+                 220,
+                 "#ff0040"
+               ]
+           ],
+          // 'circle-color': [
+          //   "interpolate",
+          //   ["linear"],
+          //   ["get", "WindSpeed.Kph"],
+          //   55,
+          //   "hsl(47, 100%, 90%)",
+          //   120,
+          //   "hsl(340, 100%, 82%)",
+          //   220,
+          //   "#ff0040"
+          //],
+          'circle-stroke-opacity': 0,
         }
       });
 
@@ -394,11 +403,14 @@ map.on('load', () => {
         map.getCanvas().style.cursor = 'pointer';
 
         const coordinates = e.features[0].geometry.coordinates.slice();
-        const {properties} = e.features[0];
-        const {stormName} = properties;
+        const { properties } = e.features[0];
+        const { stormName } = properties;
 
-        const WindSpeedKph = properties['WindSpeed.Kph'];
         const WindSpeedMph = properties['WindSpeed.Mph'];
+        const WindSpeedKph = properties['WindSpeed.Kph'];
+
+
+        hoveredStateId = e.features[0].id;
 
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
@@ -409,27 +421,23 @@ map.on('load', () => {
 
         if (e.features.length > 0) {
           if (hoveredStateId) {
-            map.setFeatureState({source: sourceName, id: hoveredStateId}, {hover: false});
-            hoveredStateId = null;
+            map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: false});
           }
           hoveredStateId = e.features[0].id;
-          map.setFeatureState({source: sourceName, id: hoveredStateId}, {hover: true});
+          map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: true});
         }
 
         const year = properties['TimeGMT.year'];
         const mon = properties['TimeGMT.mon'];
         const mday = properties['TimeGMT.mday'];
         const hour = properties['TimeGMT.hour'] || 0;
-        const category = sourceName === 'historyPointHurricanes' ?
-          properties['Category'] : null;
         const offset = new Date().getTimezoneOffset() / 60;
-        const date = new Date(+year, +mon - 1, +mday, (+hour - offset));
+        const date = new Date(+year, +mon, +mday, (+hour - offset));
 
         const popupElement = (
           `<div>
               <div>Name: ${stormName}</div>
-              <div>${category ? `Category: ${category}` : ''}</div>
-              <div>WindSpeed: ${WindSpeedKph} Kph / ${WindSpeedMph} Mph</div>
+              <div>Wind speed: ${WindSpeedMph} Mph / ${WindSpeedKph} Kph </div>
               <div><b>Time: ${date.toLocaleString()}</b></div>
           </div>`
         );
@@ -439,33 +447,32 @@ map.on('load', () => {
         popup.setLngLat(coordinates)
           .setHTML(popupElement)
           .addTo(map);
-      }
-    ;
+      };
 
-          const onMouseLeave = (sourceName) => {
-            map.getCanvas().style.cursor = '';
-            popup.remove();
+      const onMouseLeave = (sourceName) => {
+        map.getCanvas().style.cursor = '';
+        popup.remove();
 
-            if (hoveredStateId) {
-              map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: false});
-            }
-            hoveredStateId = null;
-          };
+        if (hoveredStateId) {
+          map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: false});
+        }
+        hoveredStateId =  null;
+      };
 
-          map.on('mouseenter', 'forecastPointHurricanesHover', (e) => {
-            onMouseEnter('forecastPointHurricanes', e);
-          });
+      map.on('mouseenter', 'forecastPointHurricanesHover', (e) => {
+        onMouseEnter('forecastPointHurricanes', e);
+      });
 
-          map.on('mouseenter', 'historyPointHurricanes', (e) => {
-            onMouseEnter('historyPointHurricanes', e);
-          });
+      map.on('mouseenter', 'historyPointHurricanes', (e) => {
+        onMouseEnter('historyPointHurricanes', e);
+      });
 
-          map.on('mouseleave', 'forecastPointHurricanesHover', () => {
-            onMouseLeave('forecastPointHurricanes')
-          });
+      map.on('mouseleave', 'forecastPointHurricanesHover', () => {
+        onMouseLeave('forecastPointHurricanes')
+      });
 
-          map.on('mouseleave', 'historyPointHurricanes', () => {
-            onMouseLeave('historyPointHurricanes')
-          });
-        })
-    });
+      map.on('mouseleave', 'historyPointHurricanes', () => {
+        onMouseLeave('historyPointHurricanes')
+      });
+    })
+});
