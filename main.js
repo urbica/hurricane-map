@@ -4,6 +4,7 @@ mapboxgl.accessToken = 'pk.eyJ1IjoidGF5YWNoaWxsIiwiYSI6ImNpbGtxeHdnNzAwNzRvMGtxc
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/tayachill/cjn4rvudk085g2smerfhmsbp3',
+  center: [-23.458504,33.315297],
   zoom: 2
 });
 
@@ -29,8 +30,8 @@ map.on('load', () => {
         'type': 'fill',
         'source': 'forecastPolygonHurricanes',
         'paint': {
-          'fill-color': '#5c6cd6',
-          'fill-opacity': 0.6,
+          'fill-color': '#6b6eff',
+          'fill-opacity': 0.4,
         }
       });
 
@@ -39,7 +40,7 @@ map.on('load', () => {
         'type': 'line',
         'source': 'forecastPolygonHurricanes',
         'paint': {
-          'line-color': '#5265e0',
+          'line-color': '#4042ff',
           'line-opacity': 1,
           'line-width': 10,
           'line-blur': 10
@@ -124,146 +125,258 @@ map.on('load', () => {
             22,
             10
           ],
-          'circle-color': '#FE8181',
+          'circle-color': '#4042ff',
           'circle-stroke-color': '#FFF',
           'circle-stroke-width': 1,
           'circle-stroke-opacity': 1,
         }
       });
 
-
-
       map.addLayer({
-        'id': 'historyPointHurricanes',
+        'id': 'historyPointHurricanes_bg',
         'type': 'circle',
         'source': 'historyPointHurricanes',
         'paint': {
-          'circle-radius': [
+          'circle-radius':[
             "interpolate",
             ["linear"],
             ["zoom"],
-            0,
+            2,
             [
               "/",
               [
                 "max",
                 [
                   "get",
-                  "WindRadius.64.NE"
+                  "WindRadius.34.NE"
                 ],
                 [
                   "get",
-                  "WindRadius.64.NW"
+                  "WindRadius.34.NW"
                 ],
                 [
                   "get",
-                  "WindRadius.64.SE"
+                  "WindRadius.34.SE"
                 ],
                 [
                   "get",
-                  "WindRadius.64.SW"
+                  "WindRadius.34.SW"
                 ]
               ],
-              30
+              40
             ],
-            3,
+            4,
             [
               "/",
               [
                 "max",
                 [
                   "get",
-                  "WindRadius.64.NE"
+                  "WindRadius.34.NE"
                 ],
                 [
                   "get",
-                  "WindRadius.64.NW"
+                  "WindRadius.34.NW"
                 ],
                 [
                   "get",
-                  "WindRadius.64.SE"
+                  "WindRadius.34.SE"
                 ],
                 [
                   "get",
-                  "WindRadius.64.SW"
+                  "WindRadius.34.SW"
                 ]
               ],
-              6
-            ],
-            5,
-            [
-              "/",
-              [
-                "max",
-                [
-                  "get",
-                  "WindRadius.64.NE"
-                ],
-                [
-                  "get",
-                  "WindRadius.64.NW"
-                ],
-                [
-                  "get",
-                  "WindRadius.64.SE"
-                ],
-                [
-                  "get",
-                  "WindRadius.64.SW"
-                ]
-              ],
-              3
+              15
             ],
             22,
             [
               "max",
               [
                 "get",
-                "WindRadius.64.NE"
+                "WindRadius.34.NE"
               ],
               [
                 "get",
-                "WindRadius.64.NW"
+                "WindRadius.34.NW"
               ],
               [
                 "get",
-                "WindRadius.64.SE"
+                "WindRadius.34.SE"
               ],
               [
                 "get",
-                "WindRadius.64.SW"
+                "WindRadius.34.SW"
               ]
             ]
+          ] ,
+          'circle-color': "hsla(352, 0%, 100%, 0)",
+          'circle-stroke-opacity': 1,
+          'circle-stroke-color': '#d0c4f3',
+          'circle-stroke-width':[
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            0,
+            0.5,
+            4,
+            4,
+            6,
+            15,
+            22,
+            20
           ],
-          'circle-color': '#fe8191',
-          'circle-stroke-color': '#FFF',
-          'circle-stroke-width': 1,
+          'circle-blur': 1
+        }
+      });
+
+      map.addLayer({
+        'id': 'historyPointHurricanes',
+        'type': 'circle',
+        'source': 'historyPointHurricanes',
+        'paint': {
+          'circle-radius':[
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            2,
+            [
+              "/",
+              [
+                "max",
+                [
+                  "get",
+                  "WindRadius.34.NE"
+                ],
+                [
+                  "get",
+                  "WindRadius.34.NW"
+                ],
+                [
+                  "get",
+                  "WindRadius.34.SE"
+                ],
+                [
+                  "get",
+                  "WindRadius.34.SW"
+                ]
+              ],
+              40
+            ],
+            4,
+            [
+              "/",
+              [
+                "max",
+                [
+                  "get",
+                  "WindRadius.34.NE"
+                ],
+                [
+                  "get",
+                  "WindRadius.34.NW"
+                ],
+                [
+                  "get",
+                  "WindRadius.34.SE"
+                ],
+                [
+                  "get",
+                  "WindRadius.34.SW"
+                ]
+              ],
+              15
+            ],
+            22,
+            [
+              "max",
+              [
+                "get",
+                "WindRadius.34.NE"
+              ],
+              [
+                "get",
+                "WindRadius.34.NW"
+              ],
+              [
+                "get",
+                "WindRadius.34.SE"
+              ],
+              [
+                "get",
+                "WindRadius.34.SW"
+              ]
+            ]
+          ] ,
+          'circle-color': [
+            "interpolate",
+            ["linear"],
+            ["get", "WindSpeed.Kph"],
+            55,
+            "hsl(47, 100%, 90%)",
+            120,
+            "hsl(340, 100%, 82%)",
+            220,
+            "#ff0040"
+          ],
           'circle-stroke-opacity': 0,
         }
       });
 
       map.addLayer({
-        'id': 'currentHurricanes',
-        'type': 'circle',
-        'source': 'currentHurricanes',
-        'paint': {
-          'circle-radius': [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            0,
-            1,
-            4,
-            5,
-            22,
-            10
-          ],
-          'circle-color': 'red',
-          'circle-stroke-color': '#FFF',
-          'circle-stroke-width': 1,
-          'circle-stroke-opacity': 0,
+        'id': 'historyPointHurricanes_txt',
+        'type': 'symbol',
+        'source': 'historyPointHurricanes',
+        "filter": [">=", "SaffirSimpsonCategory", 1],
+        "layout": {
+            "text-field": ["to-string", ["get", "SaffirSimpsonCategory"]],
+            "text-font": ["DIN Offc Pro Black", "Arial Unicode MS Regular"],
+            "text-size": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                4,
+                14,
+                22,
+                46
+            ]
+        },
+        'paint':{
+          "text-color": "#fff",
+          "text-opacity": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              3.99,
+              0,
+              4,
+              1
+          ]
         }
-      });
+        });
+
+      // map.addLayer({
+      //   'id': 'currentHurricanes',
+      //   'type': 'circle',
+      //   'source': 'currentHurricanes',
+      //   'paint': {
+      //     'circle-radius': [
+      //       "interpolate",
+      //       ["linear"],
+      //       ["zoom"],
+      //       0,
+      //       1,
+      //       4,
+      //       5,
+      //       22,
+      //       10
+      //     ],
+      //     'circle-color': 'red',
+      //     'circle-stroke-color': '#FFF',
+      //     'circle-stroke-width': 1,
+      //     'circle-stroke-opacity': 0,
+      //   }
+      // });
 
 
     })
