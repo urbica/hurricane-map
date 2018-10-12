@@ -410,6 +410,7 @@ map.on('load', () => {
         if (e.features.length > 0) {
           if (hoveredStateId) {
             map.setFeatureState({source: sourceName, id: hoveredStateId}, {hover: false});
+            hoveredStateId = null;
           }
           hoveredStateId = e.features[0].id;
           map.setFeatureState({source: sourceName, id: hoveredStateId}, {hover: true});
@@ -422,7 +423,7 @@ map.on('load', () => {
         const category = sourceName === 'historyPointHurricanes' ?
           properties['Category'] : null;
         const offset = new Date().getTimezoneOffset() / 60;
-        const date = new Date(+year, +mon, +mday, (+hour - offset));
+        const date = new Date(+year, +mon - 1, +mday, (+hour - offset));
 
         const popupElement = (
           `<div>
