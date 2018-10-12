@@ -4,7 +4,7 @@ mapboxgl.accessToken = 'pk.eyJ1IjoidGF5YWNoaWxsIiwiYSI6ImNpbGtxeHdnNzAwNzRvMGtxc
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/tayachill/cjn4rvudk085g2smerfhmsbp3',
-  center: [-23.458504,33.315297],
+  center: [-23.458504, 33.315297],
   zoom: 2
 });
 
@@ -394,8 +394,8 @@ map.on('load', () => {
         map.getCanvas().style.cursor = 'pointer';
 
         const coordinates = e.features[0].geometry.coordinates.slice();
-        const { properties } = e.features[0];
-        const { stormName } = properties;
+        const {properties} = e.features[0];
+        const {stormName} = properties;
 
         const WindSpeedKph = properties['WindSpeed.Kph'];
         const WindSpeedMph = properties['WindSpeed.Mph'];
@@ -409,10 +409,10 @@ map.on('load', () => {
 
         if (e.features.length > 0) {
           if (hoveredStateIds[sourceName]) {
-            map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, { hover: false});
+            map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, {hover: false});
           }
           hoveredStateIds[sourceName] = e.features[0].id;
-          map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, { hover: true});
+          map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, {hover: true});
         }
 
         const year = properties['TimeGMT.year'];
@@ -438,32 +438,33 @@ map.on('load', () => {
         popup.setLngLat(coordinates)
           .setHTML(popupElement)
           .addTo(map);
-      };
+      }
+    ;
 
-      const onMouseLeave = (sourceName) => {
-        map.getCanvas().style.cursor = '';
-        popup.remove();
+          const onMouseLeave = (sourceName) => {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
 
-        if (hoveredStateIds[sourceName]) {
-          map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, { hover: false});
-        }
-        hoveredStateIds = {};
-      };
+            if (hoveredStateIds[sourceName]) {
+              map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, { hover: false});
+            }
+            hoveredStateIds = {};
+          };
 
-      map.on('mouseenter', 'forecastPointHurricanesHover', (e) => {
-        onMouseEnter('forecastPointHurricanes', e);
-      });
+          map.on('mouseenter', 'forecastPointHurricanesHover', (e) => {
+            onMouseEnter('forecastPointHurricanes', e);
+          });
 
-      map.on('mouseenter', 'historyPointHurricanes', (e) => {
-        onMouseEnter('historyPointHurricanes', e);
-      });
+          map.on('mouseenter', 'historyPointHurricanes', (e) => {
+            onMouseEnter('historyPointHurricanes', e);
+          });
 
-      map.on('mouseleave', 'forecastPointHurricanesHover', () => {
-        onMouseLeave('forecastPointHurricanes')
-      });
+          map.on('mouseleave', 'forecastPointHurricanesHover', () => {
+            onMouseLeave('forecastPointHurricanes')
+          });
 
-      map.on('mouseleave', 'historyPointHurricanes', () => {
-        onMouseLeave('historyPointHurricanes')
-      });
-    })
-});
+          map.on('mouseleave', 'historyPointHurricanes', () => {
+            onMouseLeave('historyPointHurricanes')
+          });
+        })
+    });
