@@ -8,12 +8,23 @@ const map = new mapboxgl.Map({
   zoom: 2
 });
 
+const info = document.getElementById('info');
+
+let hoveredStateId =  null;
+
+
 map.on('load', () => {
   fetch('https://api.wunderground.com/api/63bd21da7558e560/currenthurricane/view.json')
     .then(response => response.json())
     .then(data => {
+      const { year, mon, mday, hour } = data.currenthurricane[0].Current.TimeGMT;
+      const offset = new Date().getTimezoneOffset() / 60;
+      const currentDate = new Date(+year, +mon, +mday, (+hour - offset));
+
+      info.textContent = `Updated: ${currentDate.toLocaleString()}`;
       return parsingSources(data)
     })
+
     .then(sources => {
       // add sources
       Object.keys(sources).forEach(id => {
@@ -129,6 +140,11 @@ map.on('load', () => {
           'circle-stroke-color': '#FFF',
           'circle-stroke-width': 1,
           'circle-stroke-opacity': 1,
+          "circle-opacity": ["case",
+            ["boolean", ["feature-state", "hover"], false],
+            1,
+            0.5
+          ]
         }
       });
 
@@ -266,6 +282,86 @@ map.on('load', () => {
         }
       });
 
+      // Create a popup, but don't add it to the map yet.
+      let popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+      });
 
+      const onMouseEnter = (e) => {
+        // Change the cursor style as a UI indicator.
+        map.getCanvas().style.cursor = 'pointer';
+
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const { properties } = e.features[0];
+        const { stormName } = properties;
+
+        const WindSpeedKph = properties['WindSpeed.Kph'];
+        const WindSpeedMph = properties['WindSpeed.Mph'];
+
+        hoveredStateId = e.features[0].id;
+
+        // Ensure that if the map is zoomed out such that multiple
+        // copies of the feature are visible, the popup appears
+        // over the copy being pointed to.
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        if (e.features.length > 0) {
+          if (hoveredStateId) {
+            map.setFeatureState({source: 'forecastPointHurricanes', id: hoveredStateId}, { hover: false});
+          }
+          hoveredStateId = e.features[0].id;
+          map.setFeatureState({source: 'forecastPointHurricanes', id: hoveredStateId}, { hover: true});
+        }
+
+        const year = properties['TimeGMT.year'];
+        const mon = properties['TimeGMT.mon'];
+        const mday = properties['TimeGMT.mday'];
+        const hour = properties['TimeGMT.hour'];
+        const offset = new Date().getTimezoneOffset() / 60;
+        const date = new Date(+year, +mon, +mday, (+hour - offset));
+
+        const popupElement = (
+          `<div>
+              <div>Name: ${stormName}</div>
+              <div>WindSpeed: ${WindSpeedKph} Kph / ${WindSpeedMph} Mph</div>
+              <div><b>Time: ${date.toLocaleString()}</b></div>
+          </div>`
+        );
+
+        // Populate the popup and set its coordinates
+        // based on the feature found.
+        popup.setLngLat(coordinates)
+          .setHTML(popupElement)
+          .addTo(map);
+      };
+
+      const onMouseLeave = () => {
+        map.getCanvas().style.cursor = '';
+        popup.remove();
+
+        if (hoveredStateId) {
+          map.setFeatureState({source: 'forecastPointHurricanes', id: hoveredStateId}, { hover: false});
+        }
+        hoveredStateId =  null;
+      };
+
+      map.on('mouseenter', 'forecastPointHurricanes', (e) => {
+        onMouseEnter(e);
+      });
+
+      map.on('mouseenter', 'historyPointHurricanes', (e) => {
+        onMouseEnter(e);
+      });
+
+      map.on('mouseleave', 'forecastPointHurricanes', () => {
+        onMouseLeave()
+      });
+
+      map.on('mouseleave', 'historyPointHurricanes', () => {
+        onMouseLeave()
+      });
     })
 });

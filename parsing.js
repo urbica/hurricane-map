@@ -27,11 +27,15 @@ const parsingSources = (data) => {
     },
   };
 
-  return data.currenthurricane.reduce((acc, hurricane) => {
+  return data.currenthurricane.reduce((acc, hurricane, numberHurricane) => {
     // currentHurricanes
     acc.currentHurricanes['features'].push({
       type: 'Feature',
-      properties: flattenObject(hurricane.Current),
+      id: numberHurricane,
+      properties: {
+        ...hurricane.stormInfo,
+        ...flattenObject(hurricane.Current)
+      },
       geometry: {
         "type": "Point",
         coordinates: [hurricane.Current.lon, hurricane.Current.lat]
@@ -41,6 +45,7 @@ const parsingSources = (data) => {
     // trajectoriesHurricanes
     acc.trajectoriesHurricanes['features'].push({
       type: 'Feature',
+      id: numberHurricane,
       properties: hurricane.stormInfo,
       geometry: {
         "type": "LineString",
@@ -51,6 +56,7 @@ const parsingSources = (data) => {
     // forecastHurricanes
     acc.forecastLineHurricanes['features'].push({
       type: 'Feature',
+      id: numberHurricane,
       properties: hurricane.stormInfo,
       geometry: {
         "type": "LineString",
@@ -60,11 +66,12 @@ const parsingSources = (data) => {
       }
     });
 
-    const circlePoints = [hurricane.Current]
+    [hurricane.Current]
       .concat(hurricane.forecast)
       .concat(hurricane.ExtendedForecast)
-      .map(item => {
+      .forEach((item, i) => {
         acc.forecastPointHurricanes['features'].push({
+          id: (numberHurricane + 100) * (i + 1),
           type: 'Feature',
           properties: {
             ...hurricane.stormInfo,
@@ -79,22 +86,46 @@ const parsingSources = (data) => {
         return [item.lon, item.lat]
       });
 
-    const errorArr = hurricane.forecast
+    const { polygons } = [hurricane.Current]
+      .concat(hurricane.forecast)
       .concat(hurricane.ExtendedForecast)
-      .map(item => +item.ErrorRadius);
-    const errorValues = interpolateArray([0.1].concat(errorArr), 200);
+      .reduce((acc, item) => {
+        const errorRadiusDeg = parseFloat(item['ErrorRadius'] || '0.1');
+        const ruler = cheapRuler(item.lat);
 
-    const circles = interpolateLineRange(circlePoints, 200)
-      .map((point, i) => turf.circle(point, errorValues[i] * 200, {steps: 16, units: 'kilometers'}));
+        const errorRadius = ruler.distance([item.lon, item.lat], [item.lon + errorRadiusDeg, item.lat]);
 
-    const polygon = turf.union(...circles);
-    // console.log(polygonSmooth(polygon, { iterations: 1 }));
-    const options = {tolerance: 0.1, highQuality: false};
-    const feature = polygonSmooth(turf.simplify(polygon, options), { iterations: 3 }).features[0];
+        if (!acc.prevPoint) {
+          const circle = turf.circle([item.lon, item.lat], errorRadius, {steps: 32, units: 'kilometers'});
+          acc.polygons.push(circle);
+          acc.prevPoint = {
+            errorRadius,
+            geom: [item.lon, item.lat]
+          };
+          return acc;
+        }
 
-    // const feature = polygonSmooth(polygon1, {iterations: 3});
+        const firstPoint = acc.prevPoint.geom;
+        const nextPoint = [item.lon, item.lat];
 
-    // console.log(feature);
+        let bearing = ruler.bearing(firstPoint, nextPoint);
+        let p1 = ruler.destination(nextPoint, errorRadius, bearing + 90);
+        let p2 = ruler.destination(firstPoint, acc.prevPoint.errorRadius, bearing + 90);
+        let p3 = ruler.destination(firstPoint, acc.prevPoint.errorRadius, bearing - 90);
+        let p4 = ruler.destination(nextPoint, errorRadius, bearing - 90);
+
+        const polygon = turf.polygon([[p1, p2, p3, p4, p1]]);
+        const circle = turf.circle(nextPoint, errorRadius, {steps: 32, units: 'kilometers'});
+        acc.prevPoint = {
+          errorRadius,
+          geom: [item.lon, item.lat]
+        };
+        acc.polygons.push(polygon);
+        acc.polygons.push(circle);
+        return acc;
+      }, { prevPoint: null, polygons: [] });
+
+    const forecastPolygon = turf.union(...polygons);
 
     acc.forecastPolygonHurricanes['features'].push({
       type: 'Feature',
@@ -103,12 +134,13 @@ const parsingSources = (data) => {
       },
       geometry: {
         "type": "Polygon",
-        coordinates: feature.geometry.coordinates
+        coordinates: forecastPolygon.geometry.coordinates
       }
     });
 
-    hurricane.track.forEach(item => {
+    hurricane.track.forEach((item, i) => {
       acc.historyPointHurricanes['features'].push({
+        id: (numberHurricane + 100) * (i + 1),
         type: 'Feature',
         properties: {
           ...hurricane.stormInfo,
