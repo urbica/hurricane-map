@@ -10,7 +10,7 @@ const map = new mapboxgl.Map({
 
 const info = document.getElementById('info');
 
-let hoveredStateIds = {};
+let hoveredStateId = null;
 
 map.on('load', () => {
   fetch('https://api.wunderground.com/api/63bd21da7558e560/currenthurricane/view.json')
@@ -408,18 +408,18 @@ map.on('load', () => {
         }
 
         if (e.features.length > 0) {
-          if (hoveredStateIds[sourceName]) {
-            map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, {hover: false});
+          if (hoveredStateId) {
+            map.setFeatureState({source: sourceName, id: hoveredStateId}, {hover: false});
           }
-          hoveredStateIds[sourceName] = e.features[0].id;
-          map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, {hover: true});
+          hoveredStateId = e.features[0].id;
+          map.setFeatureState({source: sourceName, id: hoveredStateId}, {hover: true});
         }
 
         const year = properties['TimeGMT.year'];
         const mon = properties['TimeGMT.mon'];
         const mday = properties['TimeGMT.mday'];
         const hour = properties['TimeGMT.hour'] || 0;
-        const category = properties['Category'] !== 'ts' ?
+        const category = sourceName === 'historyPointHurricanes' ?
           properties['Category'] : null;
         const offset = new Date().getTimezoneOffset() / 60;
         const date = new Date(+year, +mon, +mday, (+hour - offset));
@@ -445,10 +445,10 @@ map.on('load', () => {
             map.getCanvas().style.cursor = '';
             popup.remove();
 
-            if (hoveredStateIds[sourceName]) {
-              map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, { hover: false});
+            if (hoveredStateId) {
+              map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: false});
             }
-            hoveredStateIds = {};
+            hoveredStateId = null;
           };
 
           map.on('mouseenter', 'forecastPointHurricanesHover', (e) => {
