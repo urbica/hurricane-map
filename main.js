@@ -134,7 +134,11 @@ map.on('load', () => {
             22,
             10
           ],
-          'circle-color': '#4042ff',
+          'circle-color': ['case',
+            ['boolean', ['feature-state', 'hover'], false],
+            "#980027",
+            '#4042ff'
+          ],
           'circle-stroke-color': '#FFF',
           'circle-stroke-width': 1,
           'circle-stroke-opacity': 1,
@@ -327,23 +331,23 @@ map.on('load', () => {
               ]
             ]
           ],
-          'circle-color': [
-            "interpolate",
-            ["linear"],
-            ["get", "WindSpeed.Kph"],
-            55,
-            "hsl(47, 100%, 90%)",
-            120,
-            "hsl(340, 100%, 82%)",
-            220,
-            "#ff0040"
+          'circle-color': ['case',
+            ['boolean', ['feature-state', 'hover'], false],
+            "#980027"
+            ,
+            [
+              "interpolate",
+              ["linear"],
+              ["get", "WindSpeed.Kph"],
+              55,
+              "hsl(47, 100%, 90%)",
+              120,
+              "hsl(340, 100%, 82%)",
+              220,
+              "#ff0040"
+            ]
           ],
-          'circle-stroke-opacity': 0,
-          "circle-opacity": ["case",
-            ["boolean", ["feature-state", "hover"], false],
-            1,
-            0.5
-          ]
+          'circle-stroke-opacity': 0
         }
       });
 
@@ -415,12 +419,15 @@ map.on('load', () => {
         const mon = properties['TimeGMT.mon'];
         const mday = properties['TimeGMT.mday'];
         const hour = properties['TimeGMT.hour'] || 0;
+        const category = properties['Category'] === 'ts' ?
+          properties['stormName_Nice'] : properties['Category'];
         const offset = new Date().getTimezoneOffset() / 60;
         const date = new Date(+year, +mon, +mday, (+hour - offset));
 
         const popupElement = (
           `<div>
               <div>Name: ${stormName}</div>
+              <div>Category: ${category}</div>
               <div>WindSpeed: ${WindSpeedKph} Kph / ${WindSpeedMph} Mph</div>
               <div><b>Time: ${date.toLocaleString()}</b></div>
           </div>`
