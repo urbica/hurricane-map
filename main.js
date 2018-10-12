@@ -10,8 +10,7 @@ const map = new mapboxgl.Map({
 
 const info = document.getElementById('info');
 
-let hoveredStateId =  null;
-
+let hoveredStateIds = {};
 
 map.on('load', () => {
   fetch('https://api.wunderground.com/api/63bd21da7558e560/currenthurricane/view.json')
@@ -340,6 +339,11 @@ map.on('load', () => {
             "#ff0040"
           ],
           'circle-stroke-opacity': 0,
+          "circle-opacity": ["case",
+            ["boolean", ["feature-state", "hover"], false],
+            1,
+            0.5
+          ]
         }
       });
 
@@ -392,8 +396,6 @@ map.on('load', () => {
         const WindSpeedKph = properties['WindSpeed.Kph'];
         const WindSpeedMph = properties['WindSpeed.Mph'];
 
-        hoveredStateId = e.features[0].id;
-
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
         // over the copy being pointed to.
@@ -402,11 +404,11 @@ map.on('load', () => {
         }
 
         if (e.features.length > 0) {
-          if (hoveredStateId) {
-            map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: false});
+          if (hoveredStateIds[sourceName]) {
+            map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, { hover: false});
           }
-          hoveredStateId = e.features[0].id;
-          map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: true});
+          hoveredStateIds[sourceName] = e.features[0].id;
+          map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, { hover: true});
         }
 
         const year = properties['TimeGMT.year'];
@@ -435,10 +437,10 @@ map.on('load', () => {
         map.getCanvas().style.cursor = '';
         popup.remove();
 
-        if (hoveredStateId) {
-          map.setFeatureState({source: sourceName, id: hoveredStateId}, { hover: false});
+        if (hoveredStateIds[sourceName]) {
+          map.setFeatureState({source: sourceName, id: hoveredStateIds[sourceName]}, { hover: false});
         }
-        hoveredStateId =  null;
+        hoveredStateIds = {};
       };
 
       map.on('mouseenter', 'forecastPointHurricanesHover', (e) => {
