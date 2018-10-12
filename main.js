@@ -419,15 +419,15 @@ map.on('load', () => {
         const mon = properties['TimeGMT.mon'];
         const mday = properties['TimeGMT.mday'];
         const hour = properties['TimeGMT.hour'] || 0;
-        const category = properties['Category'] === 'ts' ?
-          properties['stormName_Nice'] : properties['Category'];
+        const category = properties['Category'] !== 'ts' ?
+          properties['Category'] : null;
         const offset = new Date().getTimezoneOffset() / 60;
         const date = new Date(+year, +mon, +mday, (+hour - offset));
 
         const popupElement = (
           `<div>
               <div>Name: ${stormName}</div>
-              <div>Category: ${category}</div>
+              <div>${category ? `Category: ${category}` : ''}</div>
               <div>WindSpeed: ${WindSpeedKph} Kph / ${WindSpeedMph} Mph</div>
               <div><b>Time: ${date.toLocaleString()}</b></div>
           </div>`
