@@ -435,9 +435,13 @@ map.on('load', () => {
         const offset = new Date().getTimezoneOffset() / 60;
         const date = new Date(+year, +mon - 1, +mday, (+hour - offset));
 
+        const category = sourceName === 'historyPointHurricanes' ?
+          properties['Category'] : null;
+
         const popupElement = (
           `<div>
               <div>Name: ${stormName}</div>
+              <div>${category ? `Category: ${category}` : ''}</div>
               <div>Wind speed: ${WindSpeedMph} Mph / ${WindSpeedKph} Kph </div>
               <div><b>Time: ${date.toLocaleString()}</b></div>
           </div>`

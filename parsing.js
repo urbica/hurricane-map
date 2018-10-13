@@ -66,8 +66,7 @@ const parsingSources = (data) => {
       }
     });
 
-    [hurricane.Current]
-      .concat(hurricane.forecast)
+    hurricane.forecast
       .concat(hurricane.ExtendedForecast)
       .forEach((item, i) => {
         acc.forecastPointHurricanes['features'].push({
