@@ -19,7 +19,7 @@ map.on('load', () => {
     .then(data => {
       const {year, mon, mday, hour} = data.currenthurricane[0].Current.TimeGMT;
       const offset = new Date().getTimezoneOffset() / 60;
-      const currentDate = new Date(+year, +mon, +mday, (+hour - offset));
+      const currentDate = new Date(+year, +mon - 1, +mday, (+hour - offset));
 
       info.textContent = `Updated: ${currentDate.toLocaleString()}`;
       return parsingSources(data)
@@ -143,15 +143,16 @@ map.on('load', () => {
           'circle-stroke-opacity': 1,
         }
       });
-      // map.addLayer({
-      //   'id': 'forecastPointHurricanesHover',
-      //   'type': 'circle',
-      //   'source': 'forecastPointHurricanes',
-      //   'paint': {
-      //     'circle-radius': 10,
-      //     'circle-opacity': 0
-      //   }
-      // });
+
+      map.addLayer({
+        'id': 'forecastPointHurricanesHover',
+        'type': 'circle',
+        'source': 'forecastPointHurricanes',
+        'paint': {
+          'circle-radius': 10,
+          'circle-opacity': 0
+        }
+      });
 
       map.addLayer({
         'id': 'historyPointHurricanes_bg',
@@ -432,7 +433,7 @@ map.on('load', () => {
         const mday = properties['TimeGMT.mday'];
         const hour = properties['TimeGMT.hour'] || 0;
         const offset = new Date().getTimezoneOffset() / 60;
-        const date = new Date(+year, +mon, +mday, (+hour - offset));
+        const date = new Date(+year, +mon - 1, +mday, (+hour - offset));
 
         const popupElement = (
           `<div>
