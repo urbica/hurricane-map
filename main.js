@@ -21,7 +21,7 @@ map.on('load', () => {
       const offset = new Date().getTimezoneOffset() / 60;
       const currentDate = new Date(+year, +mon - 1, +mday, (+hour - offset));
 
-      info.textContent = `Date: ${currentDate.toLocaleString()}`;
+      info.textContent = `Update date: ${currentDate.toLocaleString()}`;
       return parsingSources(data)
     })
 
