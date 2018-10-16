@@ -14,14 +14,14 @@ let hoveredStateId =  null;
 
 
 map.on('load', () => {
-  fetch('https://api.wunderground.com/api/63bd21da7558e560/currenthurricane/view.json')
+  fetch('./view.json')
     .then(response => response.json())
     .then(data => {
       const {year, mon, mday, hour} = data.currenthurricane[0].Current.TimeGMT;
       const offset = new Date().getTimezoneOffset() / 60;
       const currentDate = new Date(+year, +mon - 1, +mday, (+hour - offset));
 
-      info.textContent = `Updated: ${currentDate.toLocaleString()}`;
+      info.textContent = `Date: ${currentDate.toLocaleString()}`;
       return parsingSources(data)
     })
 
